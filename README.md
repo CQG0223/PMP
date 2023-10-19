@@ -3,7 +3,7 @@
 ## Introduction
 This repository is a python implementation of "phase-shift + multi-frequency heterodyne" in the traditional PMP method. The image data in the './data' is collected by a "binocular camera + single projector". The projector projects 3 frequency fringe images separately, and each frequency fringe image projects 4 phase-shift fringes, so each camera acquires 12 images.
 <center>
-<figure class="forth">
+<figure class="half">
     <img src="./data/L/0000_0000_L.bmp" height=135>
     <img src="./data/L/0000_0001_L.bmp" height=135>
     <img src="./data/L/0000_0002_L.bmp" height=135>
