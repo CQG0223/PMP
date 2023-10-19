@@ -2,6 +2,50 @@ from PckagePahse import *
 from DataLoader import getDataLoader
 import os
 from PIL import Image
+import cv2
+
+def getPhaseK(para,FreqList,rootSeed,datapath,savepath,imshow=False,imsave=False,testSave=False):
+    ideal,actual = TwoPhaseShiftWithThreeFreq(para,datapath,savepath).run(rootSeed,imshow=imshow,imsave=testSave)
+    kk1 = (ideal['phaseIdeal1'][200,1] - ideal['phaseIdeal1'][200,2])/(ideal['phaseIdeal123'][200,1] - ideal['phaseIdeal123'][200,2])
+    kk2 = (ideal['phaseIdeal2'][200,1] - ideal['phaseIdeal2'][200,2])/(ideal['phaseIdeal123'][200,1] - ideal['phaseIdeal123'][200,2])
+    kk3 = (ideal['phaseIdeal3'][200,1] - ideal['phaseIdeal3'][200,2])/(ideal['phaseIdeal123'][200,1] - ideal['phaseIdeal123'][200,2])
+    roundImgk = []
+    for kk,actualimg in zip([kk1,kk2,kk3],[actual['phaseActual1'],actual['phaseActual2'],actual['phaseActual3']]):
+        img = actual['phaseActual123']*kk
+
+        ImgK = (img - actualimg)/(2*np.pi)
+        kernel = np.ones((7, 7), np.uint8)
+        ImgK = cv2.morphologyEx(ImgK, cv2.MORPH_OPEN, kernel)
+        _roundImgk = np.round(ImgK)
+        #Tested by CQG 20231019
+        #SingleImgshow([800,1000],[ImgK,_roundImgk])
+        roundImgk.append([_roundImgk,actualimg])
+    if imsave:
+        saveReslt(roundImgk,FreqList,rootSeed,savepath)
+    return roundImgk
+
+def saveReslt(dataList,FreqencyList,rootNum,savepath):
+        assert len(dataList) == len(FreqencyList),"error result"
+        assert os.path.exists(savepath),"path error"
+        for index,data in enumerate(dataList):
+            assert len(data) == 2,"error result data"
+            filenameWarred = "{}_{}_warrped.bmp".format(rootNum,FreqencyList[index])
+            filenameK = "{}_{}_UnwarrpedK.bmp".format(rootNum,FreqencyList[index])
+            imgK = Image.fromarray(MaxMinProcess(data[0]))
+            imgWarred = Image.fromarray(MaxMinProcess(data[1]))
+
+            Path = os.path.join(savepath,filenameK)
+            imgK.save(Path)
+
+            Path = os.path.join(savepath,filenameWarred)
+            imgWarred.save(Path)
+
+def MaxMinProcess(image):
+        _min = image.min()
+        _max = image.max()
+        image = ((image - _min)/(_max - _min))*255
+        return np.uint8(image)
+
 
 class TwoPhaseShiftWithThreeFreq(object):
     def __init__(self,para,datapath,savepath):
@@ -11,22 +55,16 @@ class TwoPhaseShiftWithThreeFreq(object):
         assert os.path.exists(datapath) and os.path.exists(savepath),"wrong path!!!"
         self.paraFirstFreq,self.paraSecondFreq,self.paraThirdFreq = para[0],para[1],para[2]
         
-    
-    def _MaxMinProcess(self,image):
-        _min = image.min()
-        _max = image.max()
-        image = ((image - _min)/(_max - _min))*255
-        return np.uint8(image)
-    
     def _saveBMP(self,root,imagedict):
         for key,Value in imagedict.items():
-            im = Image.fromarray(self._MaxMinProcess(Value))
+            im = Image.fromarray(MaxMinProcess(Value))
             filename = f"{key}.bmp"
             Path = os.path.join(root,filename)
             im.save(Path)
     
-    def run(self,imshow=False,imsave=False):
-        imgListL,imgListR = getDataLoader(self.datapath,4,3)
+    
+    def run(self,rootNum,imshow=False,imsave=False):
+        imgListL = getDataLoader(self.datapath,4,3,rootNum)
         actualImg1,actualImg2,actualImg3 = imgListL[0],imgListL[1],imgListL[2]
 
 
@@ -58,7 +96,7 @@ class TwoPhaseShiftWithThreeFreq(object):
         phaseIdeal123,phaseActual123 = StdPhase(phaseIdeal123,phaseActual123)
         right_mask1 = phaseActual123 <= 2 * np.pi
         right_mask2 = phaseActual123 >= 0
-        phaseActual123 = phaseActual123 * right_mask1 * right_mask2
+        phaseActual123 = phaseActual123 * right_mask1 * right_mask2 * BActual1*BActual2*BActual3
 
         saveListIdeal = dict(phaseIdeal1 = phaseIdeal1,phaseIdeal2 = phaseIdeal2,phaseIdeal3 = phaseIdeal3,
                          phaseIdeal12 = phaseIdeal12,phaseIdeal23 = phaseIdeal23,phaseIdeal123 = phaseIdeal123)
@@ -70,14 +108,6 @@ class TwoPhaseShiftWithThreeFreq(object):
             self._saveBMP(self.savepath,saveListActual)
         if imshow:
             #showlist = [phaseActual1,phaseActual2,phaseActual3,phaseActual12,phaseActual23,phaseActual123]
-            showlist = [phaseActual123]
-            SingleImgshow(900,showlist)
-
-if __name__ == '__main__':
-    para = []
-    para.append({'A':130,'B':90,'N':4,'W':1024,'H':1024,'T':28})
-    para.append({'A':130,'B':90,'N':4,'W':1024,'H':1024,'T':26})
-    para.append({'A':130,'B':90,'N':4,'W':1024,'H':1024,'T':24})
-    datapath = r'../data'
-    savepath = r'../Resourse'
-    TwoPhaseShiftWithThreeFreq(para,datapath,savepath)
+            showlist = [phaseActual123,phaseActual1,phaseActual12]
+            SingleImgshow([900],showlist)
+        return saveListIdeal,saveListActual

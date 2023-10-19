@@ -1,7 +1,8 @@
 from .DataLoader import DataItern
 
-def getDataLoader(path,N,NumFrequency):
-    DataObject = DataItern(path)
+
+def getDataLoader(path,N,NumFrequency,rootNum):
+    DataObject = DataItern(path,rootNum)
     assert len(DataObject) == N*NumFrequency,"data error!!!Plase check your data!!!"
     actualN = N
     imgL = []
@@ -19,4 +20,4 @@ def getDataLoader(path,N,NumFrequency):
                 imgR = []
                 continue
             N = N -1
-    return imgListL,imgListR
+    return imgListL

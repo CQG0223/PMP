@@ -20,13 +20,13 @@ def image_basename(filename):
     return os.path.basename(os.path.splitext(filename)[0])
 
 class DataItern(object):
-    def __init__(self,root):
+    def __init__(self,root,rootNum):
         self.image_left = os.path.join(root,'L/')
         self.image_right = os.path.join(root,'R/')
 
-        self.filenameleft = [os.path.join(dp,f) for dp,dn,fn in os.walk(os.path.expanduser(self.image_left))for f in fn if is_image(f)]
+        self.filenameleft = [os.path.join(dp,f) for dp,dn,fn in os.walk(os.path.expanduser(self.image_left))for f in fn if is_image(f) and f[:4]==rootNum]
         self.filenameleft.sort()
-        self.filenameright = [os.path.join(dp,f) for dp,dn,fn in os.walk(os.path.expanduser(self.image_left))for f in fn if is_image(f)]
+        self.filenameright = [os.path.join(dp,f) for dp,dn,fn in os.walk(os.path.expanduser(self.image_right))for f in fn if is_image(f) and f[:4]==rootNum]
         self.filenameright.sort()
         assert len(self.filenameleft) == len(self.filenameright),"The number of images in the subdirectories L and R is inconsistent."
         print("DataLoader success! left:{} right:{}".format(len(self.filenameleft),len(self.filenameright)))
