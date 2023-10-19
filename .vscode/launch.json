@@ -8,7 +8,7 @@
             "name": "Python: PMP",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/test.py",
+            "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }
