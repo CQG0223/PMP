@@ -4,7 +4,7 @@ import os
 from PIL import Image
 import cv2
 
-def getPhaseK(para,FreqList,rootSeed,datapath,savepath,imshow=False,imsave=False,testSave=False):
+def getPhaseK(para,FreqList,LorR,rootSeed,datapath,savepath,imshow=False,imsave=False,testSave=False):
     ideal,actual = TwoPhaseShiftWithThreeFreq(para,datapath,savepath).run(rootSeed,imshow=imshow,imsave=testSave)
     kk1 = (ideal['phaseIdeal1'][200,1] - ideal['phaseIdeal1'][200,2])/(ideal['phaseIdeal123'][200,1] - ideal['phaseIdeal123'][200,2])
     kk2 = (ideal['phaseIdeal2'][200,1] - ideal['phaseIdeal2'][200,2])/(ideal['phaseIdeal123'][200,1] - ideal['phaseIdeal123'][200,2])
@@ -21,24 +21,28 @@ def getPhaseK(para,FreqList,rootSeed,datapath,savepath,imshow=False,imsave=False
         #SingleImgshow([800,1000],[ImgK,_roundImgk])
         roundImgk.append([_roundImgk,actualimg])
     if imsave:
-        saveReslt(roundImgk,FreqList,rootSeed,savepath)
+        saveReslt(roundImgk,FreqList,rootSeed,savepath,LorR)
     return roundImgk
 
-def saveReslt(dataList,FreqencyList,rootNum,savepath):
+def saveReslt(dataList,FreqencyList,rootNum,savepath,LorR):
         assert len(dataList) == len(FreqencyList),"error result"
         assert os.path.exists(savepath),"path error"
         for index,data in enumerate(dataList):
             assert len(data) == 2,"error result data"
-            filenameWarred = "{}_{}_warrped.bmp".format(rootNum,FreqencyList[index])
-            filenameK = "{}_{}_UnwarrpedK.bmp".format(rootNum,FreqencyList[index])
-            imgK = Image.fromarray(MaxMinProcess(data[0]))
+            filenameWarred = "{}_{}".format(rootNum,FreqencyList[index]) + LorR + ".bmp"
+            filenameK = "{}_{}".format(rootNum,FreqencyList[index]) + LorR + ".bmp"
+            imgK = Image.fromarray((np.uint8(data[0])))
             imgWarred = Image.fromarray(MaxMinProcess(data[1]))
 
-            Path = os.path.join(savepath,filenameK)
+            Path = os.path.join(savepath,'gtFine','train',filenameK)
             imgK.save(Path)
 
-            Path = os.path.join(savepath,filenameWarred)
+            Path = os.path.join(savepath,'leftImg8bit','train',filenameWarred)
             imgWarred.save(Path)
+            '''
+            with open(os.path.join(savepath,'ImageSets','train.txt'),"a") as f:
+                 f.writelines("{}_{}\n".format(rootNum,FreqencyList[index]))
+                 '''
 
 def MaxMinProcess(image):
         _min = image.min()
@@ -64,9 +68,13 @@ class TwoPhaseShiftWithThreeFreq(object):
     
     
     def run(self,rootNum,imshow=False,imsave=False):
-        imgListL = getDataLoader(self.datapath,4,3,rootNum)
-        actualImg1,actualImg2,actualImg3 = imgListL[0],imgListL[1],imgListL[2]
+        imgListL = getDataLoader(self.datapath,rootNum)
+        #f = lambda a:map(lambda b:a[b:b+4],range(0,len(a),4))
+        b = [imgListL[i:i+4] for i in range(0,len(imgListL),4)]
 
+        actualImg1 = b[0]
+        actualImg2 = b[1]
+        actualImg3 = b[2]
 
         img = makePattern(self.paraFirstFreq).getPatten(show=False)
         phaseIdeal1,_ = PckagePhase(N=4,B_min=1).calPhase(img)
