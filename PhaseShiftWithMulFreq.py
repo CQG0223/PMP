@@ -77,23 +77,23 @@ class TwoPhaseShiftWithThreeFreq(object):
         actualImg3 = b[2]
 
         img = makePattern(self.paraFirstFreq).getPatten(show=False)
-        phaseIdeal1,_ = PckagePhase(N=4,B_min=1).calPhase(img)
+        phaseIdeal1,_ = PckagePhase(N=4,B_min=0).calPhase(img)
 
         img = makePattern(self.paraSecondFreq).getPatten(show=False)
-        phaseIdeal2,_ = PckagePhase(N=4,B_min=1).calPhase(img)
+        phaseIdeal2,_ = PckagePhase(N=4,B_min=0).calPhase(img)
 
         img = makePattern(self.paraThirdFreq).getPatten(show=False)
-        phaseIdeal3,_ = PckagePhase(N=4,B_min=1).calPhase(img)
+        phaseIdeal3,_ = PckagePhase(N=4,B_min=0).calPhase(img)
 
         phaseActual1,BActual1 = PckagePhase(N=4,B_min=1).calPhase(actualImg1)
         phaseActual2,BActual2 = PckagePhase(N=4,B_min=1).calPhase(actualImg2)
         phaseActual3,BActual3 = PckagePhase(N=4,B_min=1).calPhase(actualImg3)
 
-        phaseActual12,T12 = MutiFrequencyPhase(phaseActual1,28,phaseActual2,26)
-        phaseActual23,T23 = MutiFrequencyPhase(phaseActual2,26,phaseActual3,24)
+        phaseActual12,T12 = MutiFrequencyPhase(phaseActual1,self.paraFirstFreq['T'],phaseActual2,self.paraSecondFreq['T'])
+        phaseActual23,T23 = MutiFrequencyPhase(phaseActual2,self.paraSecondFreq['T'],phaseActual3,self.paraThirdFreq['T'])
 
-        phaseIdeal12,T12 = MutiFrequencyPhase(phaseIdeal1,28,phaseIdeal2,26)
-        phaseIdeal23,T23 = MutiFrequencyPhase(phaseIdeal2,26,phaseIdeal3,24)
+        phaseIdeal12,T12 = MutiFrequencyPhase(phaseIdeal1,self.paraFirstFreq['T'],phaseIdeal2,self.paraSecondFreq['T'])
+        phaseIdeal23,T23 = MutiFrequencyPhase(phaseIdeal2,self.paraSecondFreq['T'],phaseIdeal3,self.paraThirdFreq['T'])
 
         phaseIdeal12,phaseActual12 = StdPhase(phaseIdeal12,phaseActual12)
         phaseIdeal23,phaseActual23 = StdPhase(phaseIdeal23,phaseActual23)
@@ -115,7 +115,7 @@ class TwoPhaseShiftWithThreeFreq(object):
             self._saveBMP(self.savepath,saveListIdeal)
             self._saveBMP(self.savepath,saveListActual)
         if imshow:
-            #showlist = [phaseActual1,phaseActual2,phaseActual3,phaseActual12,phaseActual23,phaseActual123]
-            showlist = [phaseActual123,phaseActual1,phaseActual12]
-            SingleImgshow([900],showlist)
+            showlist = [phaseActual1,phaseActual12,phaseActual23]
+            #showlist = [phaseIdeal12,phaseIdeal1,phaseIdeal123]
+            SingleImgshow([1250],showlist)
         return saveListIdeal,saveListActual

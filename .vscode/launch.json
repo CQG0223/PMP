@@ -8,7 +8,7 @@
             "name": "Python: PMP",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/main.py",
+            "program": "${workspaceFolder}/rename/C000xRename.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }

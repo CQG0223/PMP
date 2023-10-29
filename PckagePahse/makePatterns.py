@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 PARAKEYS = ['A','B','W','H','T','N']
 
@@ -21,11 +22,14 @@ class makePattern(object):
             img = self._createPatten(dictionary['A'],dictionary['B'],dictionary['W'],
                                     dictionary['H'],dictionary['T'],dictionary['N'])
             if show:
-                show(img[0],dictionary['H'],dictionary['W'])
+                self._show(img[0],dictionary['H'],dictionary['W'])
         else:
             raise KeyError("Keyerror!")
         return img
-
+    def _show(self,img,H,W):
+        plt.figure()
+        plt.imshow(img,cmap='gray')
+        plt.show()
     def _createPatten(self,A,B,W,H,T,N):
         img = []
         f_2pi = 1/np.double(T) * 2 * np.pi

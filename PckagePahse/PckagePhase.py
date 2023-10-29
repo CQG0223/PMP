@@ -7,7 +7,6 @@ class PckagePhase(object):
     
     def calPhase(self,MitrixList):
         assert len(MitrixList) == self.N,"The number of imgaes cause a error!"
-        assert self.Bmin > 0
         sin_sum = 0
         cos_sum = 0
 

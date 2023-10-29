@@ -24,6 +24,7 @@ class DataItern(object):
     def __init__(self,root,rootNum):
         self.image_left = root
         self.filenameleft = [os.path.join(dp,f) for dp,dn,fn in os.walk(os.path.expanduser(self.image_left))for f in fn if is_image(f) and int(f[0:f.rfind("_")]) == rootNum]
+        assert len(self.filenameleft)!=0,"file done!!!"
         self.filenameleft.sort(key=self._takeSecond)
         print("DataLoader success! left:{} rootNum:{}".format(len(self.filenameleft),rootNum))
         if len(self.filenameleft) == 0:
